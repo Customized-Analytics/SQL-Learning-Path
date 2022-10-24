@@ -1,6 +1,10 @@
+-------------------------------------------------- Calculating Aggregates --------------------------------------------------
+
 SELECT COUNT(*) FROM users 
 WHERE email LIKE '%.com';
+
 --------------------------------------------------
+
 What are the most popular first names on Codeflix?
 Use COUNT(), GROUP BY, and ORDER BY to create a list of first names and occurrences within the users table.
 Order the data so that the most popular names are displayed first.
@@ -9,7 +13,9 @@ SELECT first_name, COUNT(*) AS 'count'
 FROM users
 GROUP BY first_name
 ORDER BY 2 DESC;
+
 --------------------------------------------------
+
 The UX Research team wants to see a distribution of watch durations. They want the result to contain:
 
 duration, which is the watch event duration, rounded to the closest minute
@@ -93,7 +99,8 @@ Use one query and rename the results to max and min.
 SELECT MAX(watch_duration_in_minutes) AS MaxDuration, MIN(watch_duration_in_minutes) AS MinDuration
 FROM watch_history ;
 
---------------------------------------------------
+
+-------------------------------------------------- Trends in Startups --------------------------------------------------
 
 1. Getting started, take a look at the startups table:
 
@@ -490,6 +497,143 @@ GROUP BY date;
 
 
 -------------------------------------------------- Joining Multiple Tables --------------------------------------------------
+
+SELECT * FROM orders
+LIMIT 5;
+ 
+SELECT * FROM subscriptions
+LIMIT 5;
+ 
+SELECT * FROM customers
+LIMIT 5;
+
+
+1. Join orders table and subscriptions table and select all columns.
+Make sure to join on the subscription_id column.
+
+SELECT * FROM orders
+JOIN subscriptions
+  ON orders.subscription_id = subscriptions.subscription_id;
+  
+
+2. Don’t remove the previous query.
+Add a second query after your first one that only selects rows from the join where description is equal to ‘Fashion Magazine’.
+
+SELECT *
+FROM orders
+JOIN subscriptions
+  ON orders.subscription_id = subscriptions.subscription_id
+WHERE subscriptions.description = 'Fashion Magazine';
+
+
+-------------------------------------------------- Inner Joins --------------------------------------------------
+
+
+SELECT COUNT(*)
+FROM newspaper;
+
+SELECT COUNT(*)
+FROM online;
+
+SELECT COUNT(*)
+FROM newspaper
+JOIN online
+	ON newspaper.id = online.id;
+
+
+-------------------------------------------------- Left Joins --------------------------------------------------
+
+-- First query
+SELECT *
+FROM newspaper
+LEFT JOIN online
+	ON newspaper.id = online.id;
+  
+-- Second query
+SELECT *
+FROM newspaper
+LEFT JOIN online
+	ON newspaper.id = online.id
+WHERE online.id IS NULL;
+
+
+-------------------------------------------------- Primary Key vs Foreign Key --------------------------------------------------
+
+Each of these tables has a column that uniquely identifies each row of that table:
+
+order_id for orders
+subscription_id for subscriptions
+customer_id for customers
+These special columns are called primary keys.
+
+Primary keys have a few requirements:
+
+1. None of the values can be NULL.
+2. Each value must be unique (i.e., you can’t have two customers with the same customer_id in the customers table).
+3. A table can not have more than one primary key column.
+
+Note that customer_id (the primary key for customers) and subscription_id (the primary key for subscriptions) both appear in this.
+When the primary key for one table appears in a different table, it is called a foreign key.
+So customer_id is a primary key when it appears in customers, but a foreign key when it appears in orders.
+
+In this example, our primary keys all had somewhat descriptive names. Generally, the primary key will just be called id. 
+Foreign keys will have more descriptive names.
+
+Why is this important? The most common types of joins will be joining a foreign key from one table with the primary key from another table. 
+For instance, when we join orders and customers, we join on customer_id, which is a foreign key in orders and the primary key in customers.
+
+
+-------------------------------------------------- Cross Join --------------------------------------------------
+
+SELECT COUNT(*) FROM newspaper
+WHERE start_month <= 3 
+  AND end_month >= 3;
+  
+SELECT * FROM newspaper
+CROSS JOIN months;
+
+SELECT * FROM newspaper
+CROSS JOIN months
+WHERE start_month <= month 
+  AND end_month >= month;
+
+SELECT month, 
+  COUNT(*)
+  FROM newspaper
+CROSS JOIN months
+WHERE start_month <= month 
+  AND end_month >= month
+GROUP BY month;
+
+
+-------------------------------------------------- Union --------------------------------------------------
+
+
+SELECT * FROM newspaper 
+UNION 
+SELECT * 
+FROM online;
+
+
+-------------------------------------------------- With --------------------------------------------------
+
+
+WITH previous_query AS (
+   SELECT customer_id,
+      COUNT(subscription_id) AS 'subscriptions'
+   FROM orders
+   GROUP BY customer_id
+)
+SELECT customers.customer_name, 
+   previous_query.subscriptions
+FROM previous_query
+JOIN customers
+  ON previous_query.customer_id = customers.customer_id;
+
+
+-------------------------------------------------- Name --------------------------------------------------
+
+
 
 
 
