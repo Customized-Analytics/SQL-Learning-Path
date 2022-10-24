@@ -93,42 +93,109 @@ Use one query and rename the results to max and min.
 SELECT MAX(watch_duration_in_minutes) AS MaxDuration, MIN(watch_duration_in_minutes) AS MinDuration
 FROM watch_history ;
 
+--------------------------------------------------
+
+1. Getting started, take a look at the startups table:
+
+SELECT * FROM startups;
 
 
+2. Calculate the total number of companies in the table.
+
+SELECT COUNT(name) AS NumberOfCompanies FROM startups;
+
+3. We want to know the total value of all companies in this table.
+Calculate this by getting the SUM() of the valuation column.
+
+SELECT SUM(valuation) SalaryInDollar FROM startups;
 
 
+4. What is the highest amount raised by a startup?
+Return the maximum amount of money raised.
+
+SELECT MAX(raised) HighestAmount FROM startups;
 
 
+5. Edit the query so that it returns the maximum amount of money raised, during ‘Seed’ stage.
+
+SELECT name, MAX(raised) AS MaxRaised, stage FROM startups
+WHERE stage = 'Seed';
 
 
+6. In what year was the oldest company on the list founded?
+
+SELECT name, MIN(founded) AS OldestCompany FROM startups;
 
 
+7. Return the average valuation.
+
+SELECT name, AVG(valuation) AS AvgValueation FROM startups;
 
 
+8. Return the average valuation, in each category.
+
+SELECT name, AVG(valuation) AS AvgValueation FROM startups
+GROUP BY category;
+
+9. Return the average valuation, in each category.
+Round the averages to tow decimal places.
+
+SELECT name, ROUND(AVG(valuation),2) AS AvgValueation FROM startups
+GROUP BY category;
 
 
+10. Return the average valuation, in each category.
+Round the averages to two decimal places.
+Lastly, order the list from highest averages to lowest.
+
+SELECT name, ROUND(AVG(valuation),2) AS AvgValueation FROM startups
+GROUP BY 1
+ORDER BY 2 DESC;
 
 
+What are the most competitive markets?
+11. First, return the name of each category with the total number of companies that belong to it.
+
+SELECT category, COUNT(*) FROM startups
+GROUP BY category;
 
 
+12. Next, filter the result to only include categories that have more than three companies in them.
+What are the most competitive markets?
+
+SELECT category, COUNT(*) AS CompetitiveMarkets FROM startups
+GROUP BY category
+HAVING COUNT(*) > 3
+ORDER BY 2 DESC;
 
 
+Let's see if there's a difference in startups sizes among different locations:
+13. What is the average size of a startup in each location?
+
+SELECT location, ROUND(AVG(employees),0) AS Employees FROM startups
+GROUP BY 1
+ORDER BY 2 DESC;
 
 
+14. What is the average size of a startup in each location, with average sizes above 500?
+
+SELECT location, ROUND(AVG(employees),0) AS Employees FROM startups
+GROUP BY 1
+HAVING AVG(employees) > 500
+ORDER BY 2 DESC;
 
 
+-------------------------------------------------- The Metropolitan Museum of Art --------------------------------------------------
+
+1. Start by getting a feel for the met table:
+
+SELECT * FROM met 
+LIMIT 10;
 
 
+2. How many pieces are in the American Decorative Art collection?
 
-
-
-
-
-
-
-
-
-
+SELECT COUNT(*) AS PiecesOfCOllection FROM met; 
 
 
 
