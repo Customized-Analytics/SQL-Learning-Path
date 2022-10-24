@@ -416,6 +416,80 @@ ORDER BY 2 DESC;
 
 -------------------------------------------------- Cryptocurrency Exchange --------------------------------------------------
 
+1. Let’s start by checking out the whole transactions table:
+What are the column names?
+
+SELECT * FROM transactions;
+
+
+2. The money_in column records the amount (in USD) the user bought.
+What is the total money_in in the table?
+
+SELECT SUM(money_in) FROM transactions;
+
+
+3. The money_out column records the amount (in USD) the user sold.
+What is the total money_out in the table?
+
+SELECT SUM(money_out) FROM transactions;
+
+
+4. It was reported that Bitcoin dominates Fiddy Cent’s exchange. Let’s see if it is true within these dates by answering two questions:
+
+How many money_in transactions are in this table?
+How many money_in transactions are in this table where ‘BIT’ is the currency?
+
+SELECT COUNT(money_in) FROM transactions;
+ 
+SELECT COUNT(money_in) FROM transactions
+WHERE currency = 'BIT';
+
+
+5. What was the largest transaction in this whole table?
+Was it money_in or money_out?
+
+SELECT 
+CASE 
+  WHEN MAX(money_in) < MAX(money_out) THEN 'money_in'
+  WHEN MAX(money_in) > MAX(money_out) THEN 'money_out'
+  ELSE 'both are the same'
+END AS 'Where is the largest transaction in?',
+CASE
+  WHEN MAX(money_in) < MAX(money_out) THEN MAX(money_in)
+  WHEN MAX(money_in) > MAX(money_out) THEN MAX(money_out)
+END AS 'What was the largest transaction?'
+FROM transactions;
+
+
+6. What is the average money_in in the table for the currency Ethereum (‘ETH’)?
+
+SELECT ROUND(AVG(money_in),0) AS AvgEthereumMoney_in FROM transactions
+WHERE currency = 'ETH';
+
+
+7. Let’s build a ledger for the different dates.
+Select date, average money_in, and average money_out from the table.
+And group everything by date.
+
+SELECT date, 
+   ROUND(AVG(money_in),0) AS Avg_IN, 
+   ROUND(AVG(money_out),0) AS Avg_Out
+FROM transactions
+GROUP BY date
+ORDER BY 2 DESC;
+
+
+8. To make the previous query easier to read, round the averages to 2 decimal places.
+Give the column aliases using AS for readability.
+
+SELECT date AS 'Date', 
+   ROUND(AVG(money_in), 2) AS 'Average Buy',
+   ROUND(AVG(money_out), 2) AS 'Average Sell'
+FROM transactions
+GROUP BY date;
+
+
+-------------------------------------------------- Joining Multiple Tables --------------------------------------------------
 
 
 
