@@ -709,36 +709,360 @@ WHERE february.user_id IS NULL;
 
 -------------------------------------------------- Mutiple Tables Challenge5 --------------------------------------------------
 
+For each month in months, we want to know if each user in premium_users was active or canceled. Cross join months and premium_users and select:
+
+		user_id from premium_users
+		purchase_date from premium_users
+		cancel_date from premium_users
+		months from months
+		
+(Be sure to select the columns in this order)
+
+ SELECT premium_users.user_id,
+ premium_users.purchase_date,
+ premium_users.cancel_date,
+ months.months
+ FROM premium_users
+ CROSS JOIN months;
 
 
+-------------------------------------------------- Mutiple Tables Challenge6 --------------------------------------------------
+
+Replace the SELECT statement in your CROSS JOIN with the following statement:
+
+		SELECT premium_users.user_id,
+		  months.months,
+		  CASE
+		    WHEN (
+		      premium_users.purchase_date <= months.months
+		      )
+		      AND
+		      (
+			premium_users.cancel_date >= months.months
+			OR
+			premium_users.cancel_date IS NULL
+		      )
+		    THEN 'active'
+		    ELSE 'not_active'
+		  END AS 'status'
+		  
+This will tell us if a particular user is 'active' or 'not_active' each month.
+
+SELECT premium_users.user_id,
+  months.months,
+  CASE
+    WHEN (
+      premium_users.purchase_date <= months.months
+      )
+      AND
+      (
+        premium_users.cancel_date >= months.months
+        OR
+        premium_users.cancel_date IS NULL
+      )
+    THEN 'active'
+    ELSE 'not_active'
+  END AS 'status'
+FROM premium_users
+CROSS JOIN months;
 
 
+-------------------------------------------------- Mutiple Tables Challenge7 --------------------------------------------------
+
+Songify has added some new songs to their catalog.
+Combine songs and bonus_songs using UNION and select all columns from the result.
+Since the songs table is so big, just look at a sample by LIMITing the results to 10 rows.
+
+SELECT * FROM songs
+UNION
+SELECT * FROM bonus_songs
+LIMIT 10;
 
 
+-------------------------------------------------- Mutiple Tables Challenge8 --------------------------------------------------
+
+Modify the query in test.sqlite:
+Add a third UNION/SELECT so that the result contains 2017-03-01.
+
+SELECT '2017-01-01' as month
+UNION
+SELECT '2017-02-01' as month
+UNION
+SELECT '2017-03-01' as month;
 
 
+-------------------------------------------------- Mutiple Tables Challenge9 --------------------------------------------------
+
+The following query will give us the number of times that each song was played:
+
+		SELECT song_id,
+		   COUNT(*) AS 'times_played'
+		FROM plays
+		GROUP BY song_id;
+		
+Use a WITH statement to alias this code as play_count.
+
+Join play_count with songs and select (in this order):
+
+		songs table’s title column
+		songs table’s artist column
+		play_count‘s times_played column
+		
+Remember that play_count.song_id will match songs.id.
+
+WITH play_count AS (
+   SELECT song_id,
+      COUNT(*) AS 'times_played'
+   FROM plays
+   GROUP BY song_id)
+SELECT songs.title,
+  songs.artist,
+  play_count.times_played
+FROM play_count
+JOIN songs
+  ON play_count.song_id = songs.id;
 
 
+-------------------------------------------------- Subqueries --------------------------------------------------
+
+We will use two tables throughout this lesson, band_students and drama_students.
+Select the first 10 rows from each of the tables to get a feel for the data.
+What are the column names?
 
 
+SELECT * FROM band_students
+LIMIT 10; 
+
+SELECT * FROM drama_students
+LIMIT 10;
+
+Column names are: id, first_name, last_name, grade, instrument
 
 
+-------------------------------------------------- Subqueries (Subqueries) --------------------------------------------------
 
 
+As the name suggests, a subquery is an internal query nested inside of an external query. 
+They can be nested inside of SELECT, INSERT, UPDATE, or DELETE statements. 
+Anytime a subquery is present, it gets executed before the external statement is run.
+
+Subqueries are very similar to joins in terms of functionality; however, 
+joins are more efficient and subqueries are typically more readable.
+
+For example, if we had two tables listing students in two different clubs, 
+book_club and art_club, we could find out which students are in both tables by using a join such as:
+
+		SELECT id, first_name, last_name
+		FROM book_club
+		JOIN art_club
+		  ON book_club.id = art_club.id;
+		  
+However, a subquery can be used to achieve the same result and is more readable:
+
+		SELECT id, first_name, last_name
+		FROM book_club
+		WHERE id IN (
+		   SELECT id 
+		   FROM art_club);
+		   
+In this statement, the subquery SELECT statement would be executed first, resulting in a list of student ids from the art_club table. 
+Then, the outer query would run and select the student ids from book_club table which also appear in the subquery results.
 
 
+Complete the subquery to find students taking both band and drama.
+
+		SELECT first_name, last_name FROM band_students
+		WHERE id IN (
+		   ...
+		   ...);
+   
+SELECT first_name, last_name FROM band_students
+WHERE id IN (
+   SELECT id
+   FROM drama_students);
 
 
+-------------------------------------------------- Subqueries (Inserts, Updates, and Deletes) --------------------------------------------------
 
 
+Now that we know what a subquery is and some syntax for using subqueries, let’s begin looking at some of the ways subqueries can be used.
+
+Previously, we mentioned subqueries can be placed inside of SELECT, INSERT, UPDATE, or DELETE statements. 
+Recall that subqueries are always executed prior to the external query being run.
+
+In the same way that the external query selects from the internal query’s results, 
+it is important to note that this same behavior takes place when the external query is an INSERT, UPDATE, or DELETE. 
+Therefore, when a subquery is nested in a DELETE statement, the rows to be deleted will be among the results from the subquery.
+
+For example, suppose students are unable to take both history and statistics. 
+If we wanted to delete the rows for statistics students who are also enrolled in history, we could execute a statement such as:
+
+		DELETE FROM statistics_students
+		WHERE id in (
+		  SELECT id 
+		  FROM history_students);
 
 
+A memo was recently released stating that 9th grade students are unable to take both drama and band concurrently. 
+The students currently enrolled in both classes will be dropped from drama and remain in band.
 
 
+-------------------------------------------------- Subqueries (Comparison Operators) --------------------------------------------------
 
 
+Subqueries have the unique ability to take the place of expressions in SQL queries. 
+As such, one way of using subqueries in SQL statements is with comparison operators.
+
+We can use operators such as <, >, =, and != to compare the results of the external query to those of the inner query.
+
+For example, if Olivia decided to drop statistics and take history, we could find out how many history students are 
+at or below her grade level by performing the following query:
+
+		SELECT * FROM history_students
+		WHERE grade <= (
+		  SELECT grade
+		  FROM statistics_students
+		  WHERE id = 1);
 
 
+Emlynne Torritti (id 20), has decided to drop band and join drama. She wants to know how many other students in her grade level are already enrolled in drama.
+
+Use a subquery to find the students enrolled in drama that are in the same grade as Emlynne.
+
+SELECT * FROM drama_students
+WHERE grade = (
+  SELECT grade
+  FROM band_students
+  WHERE id = 20);
+
+
+-------------------------------------------------- Subqueries (IN and NOT in Clauses) --------------------------------------------------
+
+
+One of the more common ways to use subqueries is with the use of an IN or NOT IN clause. 
+Recall that the subquery is always executed first followed by the external query.
+
+When an IN clause is used, results retrieved from the external query must appear within the subquery results. Similarly, 
+when a NOT IN clause is used, results retrieved from the external query must not appear within the subquery results.
+
+For example, we could use the below query to find out which students are enrolled in statistics and history:
+
+		SELECT * 
+		FROM statistics_students
+		WHERE id IN (
+		  SELECT id
+		  FROM history_students);
+
+
+Write a query that gives the first and last names of students enrolled in band but not in drama.
+
+SELECT first_name, last_name 
+FROM band_students
+WHERE id NOT IN (
+  SELECT id
+  FROM drama_students);
+
+
+-------------------------------------------------- Subqueries (EXISTS and NOT EXISTS) --------------------------------------------------
+
+
+In the previous exercise we discussed the use of IN and NOT IN clauses. We also have the option of EXISTS and NOT EXISTS clauses. 
+While EXISTS/NOT EXISTS are similar to IN/NOT IN clauses, there are some key differences. Let’s explore those differences now.
+
+Recall that when a subquery is included, the inner query runs before the external query. When the inner query is included using an IN or NOT IN clause, 
+all rows meeting the inner query’s criteria are returned and then compared against the external query’s criteria. However, 
+when the inner query is included using an EXISTS or NOT EXISTS clause, we are only checking for the presence of rows meeting the specified criteria, 
+so the inner query only returns a true or false.
+
+If we compare this functionality in terms of efficiency, EXISTS/NOT EXISTS are usually more efficient than IN/NOT IN clauses; 
+this is because the IN/NOT IN clause has to return all rows meeting the specific criteria whereas the EXISTS/NOT EXISTS only needs 
+to find the presence of one row to determine if a true or false value needs to be returned.
+
+SELECT grade FROM band_students
+WHERE EXISTS (
+  SELECT grade FROM drama_students
+)
+GROUP BY grade;
+
+
+-------------------------------------------------- Lyft Trip Data (Ride-sharing Company) --------------------------------------------------
+
+1. Let’s examine the three tables.
+
+SELECT * FROM trips;
+SELECT * FROM riders;
+SELECT * FROM cars;
+
+
+2. What’s the primary key of trips?
+What’s the primary key of riders?
+What’s the primary key of cars?
+
+For all three of them, its ID
+
+
+3. Try out a simple cross join between riders and cars.
+Is the result useful?
+
+SELECT riders.first,
+   riders.last,
+   cars.model
+FROM riders, cars;
+
+The shown Data is NOT so useful.
+
+
+4. Suppose we want to create a Trip Log with the trips and its users.
+Find the columns to join between trips and riders and combine the two tables using a LEFT JOIN.
+Let trips be the left table.
+
+SELECT * FROM trips
+LEFT JOIN riders 
+  ON trips.rider_id = riders.id;
+  
+or
+
+SELECT trips.date, 
+   trips.pickup, 
+   trips.dropoff, 
+   trips.type, 
+   trips.cost,
+   riders.first, 
+   riders.last,
+   riders.username
+FROM trips
+LEFT JOIN riders 
+  ON trips.rider_id = riders.id;
+
+
+5. Suppose we want to create a link between the trips and the cars used during those trips.
+Find the columns to join on and combine the trips and cars table using an INNER JOIN.
+
+SELECT *
+FROM trips
+JOIN cars
+  ON trips.car_id = cars.id;
+
+or 
+
+SELECT 
+  trips.date,
+  riders.username,
+  cars.model,
+  trips.cost
+FROM trips
+  JOIN cars ON trips.car_id = cars.id
+  JOIN riders ON trips.rider_id = riders.id;
+
+
+6. The new riders data are in! There are three new users this month.
+Stack the riders table on top of the new table named riders2.
+
+SELECT *
+FROM riders
+UNION
+SELECT *
+FROM riders2;
 
 
 
