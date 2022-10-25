@@ -1065,7 +1065,118 @@ SELECT *
 FROM riders2;
 
 
+-------------------------------------------------- Welp App --------------------------------------------------
 
+SELECT * FROM places 
+INNER JOIN reviews 
+   ON places.id = reviews.place_id;
+
+
+SELECT places.name, places.average_rating, reviews.username, reviews.rating, reviews.review_date, reviews.note
+FROM places 
+INNER JOIN reviews 
+   ON reviews.place_id = places.id
+ORDER BY places.average_rating DESC;
+
+
+SELECT places.id, places.name
+FROM places 
+LEFT JOIN reviews 
+   ON places.id = reviews.place_id
+WHERE reviews.place_id IS NULL;
+
+
+-------------------------------------------------- Multiple Tables with Reddit --------------------------------------------------
+
+SELECT username, MAX(score) FROM users;
+SELECT title, MAX(score) FROM posts;
+
+
+SELECT name, MAX(subscriber_count) FROM subreddits 
+ORDER BY subscriber_count DESC
+LIMIT 5;
+
+
+SELECT users.username, COUNT(posts.user_id) AS 'post_made' FROM users
+LEFT JOIN posts
+  ON users.id = posts.user_id
+GROUP BY users.id
+HAVING users.username IS NOT NULL
+ORDER BY 2 DESC;
+
+
+>> Advanced queries << 
+WITH popular_posts AS (
+  SELECT *
+  FROM posts
+  WHERE score >= 5000
+)
+SELECT subreddits.name, popular_posts.title, popular_posts.score
+FROM subreddits
+INNER JOIN popular_posts
+  ON subreddits.id = popular_posts.subreddit_id
+ORDER BY popular_posts.score DESC;
+
+
+SELECT 
+  posts.title, 
+  subreddits.name AS 'subreddit_name', 
+  MAX(posts.score) AS 'highest_score'
+FROM posts
+INNER JOIN subreddits
+  ON posts.subreddit_id = subreddits.id
+GROUP BY subreddits.id;
+
+
+SELECT 
+  subreddits.name, 
+  ROUND(AVG(posts.score),0) AS 'average_score'
+FROM subreddits
+INNER JOIN posts
+ON subreddits.id = posts.subreddit_id
+GROUP BY subreddits.name
+ORDER BY 2 DESC;
+
+
+-------------------------------------------------- VR Startup Company --------------------------------------------------
+
+SELECT employee_id
+FROM employees
+WHERE current_project IS NULL;
+
+
+SELECT project_name FROM projects
+WHERE project_id NOT IN(
+  SELECT current_project FROM employees
+  WHERE current_project IS NOT NULL
+);
+
+
+SELECT project_name FROM projects
+INNER JOIN employees 
+  ON projects.project_id = employees.current_project
+WHERE current_project IS NOT NULL
+GROUP BY project_name
+ORDER BY COUNT(employee_id) DESC
+LIMIT 1;
+
+
+SELECT project_name FROM projects
+INNER JOIN employees 
+  ON projects.project_id = employees.current_project
+WHERE current_project IS NOT NULL
+GROUP BY current_project
+HAVING COUNT(current_project) > 1;
+
+
+SELECT (COUNT(*) * 2) - 
+(
+  SELECT COUNT(*)
+  FROM employees
+  WHERE current_project IS NOT NULL
+    AND position = 'Developer'
+) AS 'Count'
+FROM projects;
 
 
 
