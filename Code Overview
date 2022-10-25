@@ -1179,6 +1179,196 @@ SELECT (COUNT(*) * 2) -
 FROM projects;
 
 
+SELECT project_name 
+FROM projects
+INNER JOIN employees 
+  ON projects.project_id = employees.current_project
+WHERE personality = (
+   SELECT personality
+   FROM employees
+   GROUP BY personality
+   ORDER BY COUNT(personality) DESC
+   LIMIT 1);
+
+
+SELECT last_name, first_name, personality, project_name
+FROM employees
+INNER JOIN projects 
+  ON employees.current_project = projects.project_id
+WHERE personality = (
+   SELECT personality 
+   FROM employees
+   WHERE current_project IS NOT NULL
+   GROUP BY personality
+   ORDER BY COUNT(personality) DESC
+   LIMIT 1);
+
+
+SELECT last_name, first_name, personality, project_name,
+CASE 
+   WHEN personality = 'INFP' 
+   THEN (SELECT COUNT(*)
+      FROM employees 
+      WHERE personality IN ('ISFP', 'ESFP', 'ISTP', 'ESTP', 'ISFJ', 'ESFJ', 'ISTJ', 'ESTJ'))
+   WHEN personality = 'ISFP' 
+   THEN (SELECT COUNT(*)
+      FROM employees 
+      WHERE personality IN ('INFP', 'ENTP', 'INFJ'))
+   -- ... etc.
+   ELSE 0
+END AS 'IMCOMPATS'
+FROM employees
+LEFT JOIN projects on employees.current_project = projects.project_id;
+
+
+-------------------------------------------------- Analyze Twitch Gaming Data --------------------------------------------------
+
+SELECT column_name
+FROM table_name
+LIMIT 20;
+
+SELECT DISTINCT column_name
+FROM table_name;
+
+SELECT game, COUNT(*)
+FROM stream
+GROUP BY game
+ORDER BY COUNT(*) DESC;
+
+SELECT game, COUNT(*)
+FROM stream
+GROUP BY 1
+ORDER BY 2 DESC;
+
+
+SELECT game, COUNT(*)
+FROM stream
+GROUP BY 1
+ORDER BY 2 DESC;
+
+
+SELECT player, COUNT(*)
+FROM stream
+GROUP BY 1
+ORDER BY 2 DESC;
+
+
+SELECT game,
+ CASE
+  WHEN game = 'Dota 2'
+      THEN 'MOBA'
+  WHEN game = 'League of Legends' 
+      THEN 'MOBA'
+  WHEN game = 'Heroes of the Storm'
+      THEN 'MOBA'
+    WHEN game = 'Counter-Strike: Global Offensive'
+      THEN 'FPS'
+    WHEN game = 'DayZ'
+      THEN 'Survival'
+    WHEN game = 'ARK: Survival Evolved'
+      THEN 'Survival'
+  ELSE 'Other'
+  END AS 'genre',
+  COUNT(*)
+FROM stream
+GROUP BY 1
+ORDER BY 3 DESC;
+
+
+SELECT strftime('%H', time),
+   COUNT(*)
+FROM stream
+GROUP BY 1;
+
+
+SELECT strftime('%H', time),
+   COUNT(*)
+FROM stream
+WHERE country = 'US'
+GROUP BY 1;
+
+
+SELECT *
+FROM stream
+JOIN chat
+  ON stream.device_id = chat.device_id;
+
+
+-------------------------------------------------- Usage Funnels --------------------------------------------------
+
+SELECT modal_text,
+  COUNT(DISTINCT CASE
+    WHEN ab_group = 'control' THEN user_id
+    END) AS 'control_clicks'
+FROM onboarding_modals
+GROUP BY 1
+ORDER BY 1;
+
+
+COUNT(DISTINCT CASE
+  WHEN ab_group = 'variant' THEN user_id
+  END) AS 'variant_clicks'
+
+or
+
+SELECT modal_text,
+  COUNT(DISTINCT CASE
+    WHEN ab_group = 'control' THEN user_id
+    END) AS 'control_clicks',
+  COUNT(DISTINCT CASE
+    WHEN ab_group = 'variant' THEN user_id
+    END) AS 'variant_clicks'
+FROM onboarding_modals
+GROUP BY 1
+ORDER BY 1;
+
+
+ SELECT *
+FROM browse AS 'b'
+LEFT JOIN checkout AS 'c'
+  ON c.user_id = b.user_id
+LEFT JOIN purchase AS 'p'
+  ON p.user_id = c.user_id
+LIMIT 50;
+
+
+SELECT DISTINCT b.browse_date,
+   b.user_id,
+   c.user_id IS NOT NULL AS 'is_checkout',
+   p.user_id IS NOT NULL AS 'is_purchase'
+FROM browse AS 'b'
+LEFT JOIN checkout 'c'
+  ON c.user_id = b.user_id
+LEFT JOIN purchase 'p'
+  ON p.user_id = c.user_id
+LIMIT 50;
+
+
+WITH funnels AS (
+  SELECT DISTINCT b.browse_date,
+     b.user_id,
+     c.user_id IS NOT NULL AS 'is_checkout',
+     p.user_id IS NOT NULL AS 'is_purchase'
+  FROM browse AS 'b'
+  LEFT JOIN checkout AS 'c'
+    ON c.user_id = b.user_id
+  LEFT JOIN purchase AS 'p'
+    ON p.user_id = c.user_id)
+SELECT browse_date, COUNT(*) AS 'num_browse',
+   SUM(is_checkout) AS 'num_checkout',
+   SUM(is_purchase) AS 'num_purchase',
+   1.0 * SUM(is_checkout) / COUNT(user_id) AS 'browse_to_checkout',
+   1.0 * SUM(is_purchase) / SUM(is_checkout) AS 'checkout_to_purchase'
+FROM funnels
+GROUP BY browse_date
+ORDER BY browse_date;
+
+
+
+
+
+
+
 
 
 
